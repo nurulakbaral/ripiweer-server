@@ -7,6 +7,7 @@ const cors = require('cors')
 const authRoutes = require('./routes/auth')
 const mongoose = require('mongoose')
 const tokenVerify = require('./middleware/tokenVerify')
+const usernameVerify = require('./middleware/usernameVerify')
 
 // Setup
 dotenv.config()
@@ -33,21 +34,18 @@ app.use(
 )
 
 // App routes
+// Notes : Urutan peletakan routes harus diperhatikan karena berjalan secara sekuensial
 app.post('/', (req, res) => {
     res.send("Success!")
 })
-app.get('/profile', tokenVerify, (req, res) => {
-    try {
-        res.send("Token diterima!")
-    } catch (error) {
-        res.status(400).send({ errors: console.error() })
-    }
-})
-app.get('/events', (req, res) => {
-    try {
-        res.send("Event public!")
-    } catch (error) {
-        res.status(400).send({ errors: console.error() })
-    }
-})
 app.use(authRoutes)
+app.get('/:username', [usernameVerify, tokenVerify], (req, res) => {
+    try {
+        const userValid = res.locals.currentUser
+        delete userValid.password
+        res.status(200).json(userValid)
+    } catch (error) {
+        res.status(400).send({ errors: error })
+    }
+})
+
