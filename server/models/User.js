@@ -33,7 +33,7 @@ const userSchema = new Schema({
         type: String,
         maxlength: [100, 'Maximum bio length is 100 characters']
     },
-    favorites: [{ name: String, icon: String }],
+    favorites: [{ name: String, iconName: String }],
     gender: {
         type: String,
     },
