@@ -44,8 +44,10 @@ const userSchema = new Schema({
 
 // Invoke a function before data saved to database
 userSchema.pre('save', async function (next) {
-    const salt = await bcrypt.genSalt()
-    this.password = await bcrypt.hash(this.password, salt)
+    if (this.password && this.isModified('password')) {
+        const salt = await bcrypt.genSalt()
+        this.password = await bcrypt.hash(this.password, salt)
+    }
     next()
 })
 
@@ -59,17 +61,21 @@ userSchema.statics.login = async function (userDataLogin) {
     }
     throw Error('Email or password is wrong!')
 }
-userSchema.statics.login = async function (userDataLogin) {
-    const { email, password } = userDataLogin
-    const userDataValid = await this.findOne({ email })
-    const userPasswordValid = await bcrypt.compare(password, userDataValid.password)
-    if (userDataValid && userPasswordValid) {
-        return userDataValid
-    }
-    throw Error('Email or password is wrong!')
-}
 userSchema.statics.usernameVerify = async function (username) {
     const usernameValid = await this.findOne({ username })
+    if (usernameValid) {
+        return usernameValid
+    }
+    throw Error(username)
+}
+userSchema.statics.addFavorite = async function ({ username, favoriteName, iconName }) {
+    const usernameValid = await this.findOne({ username })
+    const newFavorite = {
+        name: favoriteName,
+        iconName: iconName
+    }
+    usernameValid.favorites.push(newFavorite)
+    usernameValid.save()
     if (usernameValid) {
         return usernameValid
     }

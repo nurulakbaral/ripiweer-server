@@ -8,7 +8,7 @@ const usernameVerify = async (req, res, next) => {
     } catch (error) {
         res.status(400).json({ errors: 'Username doesnt exit' })
     }
-    next()
+    // next()
 }
 
 module.exports = usernameVerify
