@@ -61,3 +61,29 @@ app.post('/favorite/:username', [usernameVerify], async (req, res) => {
         res.status(400).json({ error: error })
     }
 })
+app.delete('/favorite/:id', async (req, res) => {
+    const userId = req.params.id
+    try {
+        await User.findById({ _id: userId })
+            .then(async (user) => {
+                // Fix/Bugs: Id dari favorites masih hardcore!
+                const favoriteId = '604c8f3e283b0a2aab2c0b7f'
+                // Notes: Sebelum didelete check dulu item tersebut
+                // Notes: Ingat _id pada Mongo itu adalah Object seingga harus diubah ke String
+                const isFavoriteExist = user.favorites.find(favorite => favorite._id.toString() === favoriteId) || false
+                // Notes: Untuk menghapus item objek dari favorites
+                if (isFavoriteExist) {
+                    user.favorites.pull({ _id: favoriteId })
+                    user.save()
+                    res.status(200).json([user])
+                }
+                throw Error('Favorite does not exist!')
+            })
+            .catch((error) => {
+                throw Error(error)
+            })
+    } catch (error) {
+        res.status(400).json({ error: error.message })
+    }
+})
+
